@@ -1,78 +1,67 @@
-# user-management-microservice
+# User Microservice
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+### Overview
+The User Microservice is a core part of the e-commerce platform, responsible for handling user authentication, authorization, profiles, addresses, and other user-related functionalities. This microservice supports multiple roles (e.g., customer, vendor, admin), manages multiple addresses for each user, and ensures secure password management, JWT authentication, and verification mechanisms
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+### Key Features
+1. User registration, login, and profile management.
+2. Role-based access control (RBAC).
+3. Multiple addresses per user with the option to mark one as the primary address.
+4. Password reset, email, and phone verification.
+5. JWT-based authentication with refresh tokens.
+6. Activity logging for security and auditing purposes.
+7. Custom user preferences (e.g., language, currency, and promotional settings).
 
-## Running the application in dev mode
+### Table Structure
+The database schema consists of ten main tables designed to support all the features mentioned above.
 
-You can run your application in dev mode that enables live coding using:
+#### 1. Users
+Stores essential user information such as email, phone, and verification status.
 
-```shell script
-./gradlew quarkusDev
-```
+| column              | Type         | Description                               |
+|---------------------|--------------|-------------------------------------------|
+| id                  | BIGINT       | Primary Key, Auto Generated               |
+| first_name          | VARCHAR(255) | User's first name                         |
+| last_name           | VARCHAR(255) | User's last name                          |
+| email               | VARCHAR(255) | User's email (unique)                     |
+| phone_number        | VARCHAR(20)  | User's Phone Number (uniquer)             |
+| password_hash       | VARCHAR(255) | Encrypted Password                        |
+| profile_picture_url | VARCHAR(255) | URL for user's profile picture            |
+| email_verified      | BOOLEAN      | Flag to indicate if the email is verified |
+| phone_verified      | BOOLEAN      | Flag to indicate if the phone is verified |
+| status              | ENUM         | User status: ACTIVE, DEACTIVATED, DELETED |
+| created_at          | TIMESTAMP    | Time of creation                          |
+| updated_at          | TIMESTAMP    | Time of last update                       |
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+#### 2. addresses
+   Stores multiple addresses for each user, with one address marked as primary.
 
-## Packaging and running the application
+| column         | Type         | Description                                  |
+|----------------|--------------|----------------------------------------------|
+| id             | BIGINT       | Primary Key, Auto Generated                  |
+| user_id        | BIGINT       | Foreign Key to users table                   |
+| street         | VARCHAR(255) | Street Name                                  |
+| city           | VARCHAR(255) | City                                         |
+| state          | VARCHAR(20)  | state (optional)                             |
+| country        | VARCHAR(255) | Country                                      |
+| postal_code    | VARCHAR(10)  | Postal Code                                  |
+| is_primary     | BOOLEAN      | Whether this address is the primary address. |
+| created_at     | TIMESTAMP    | Time of creation                             |
+| updated_at     | TIMESTAMP    | Time of last update                          |
 
-The application can be packaged using:
+#### 3. roles
+Defines the roles that can be assigned to users (e.g., CUSTOMER, VENDOR, ADMIN).
 
-```shell script
-./gradlew build
-```
+| column    | Type        | Description                 |
+|-----------|-------------|-----------------------------|
+| id        | BIGINT      | Primary Key, Auto Generated |
+| role_name | VARCHAR(50) | Name of the role            |
 
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
+#### 4. user_roles
+Maps users to roles, allowing many-to-many relationships between users and roles.
 
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./build/user-management-microservice-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
-
-## Related Guides
-
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+| column          | Type           | Description                    |
+|-----------------|----------------|--------------------------------|
+| role_id         | BIGINT         | Foreign key to the roles table |
+| user_id         | BIGINT         | Foreign Key to users table     |
+| assigned_at     | TIMESTAMP(255) | Time the role was assigned     |
